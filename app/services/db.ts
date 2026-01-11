@@ -2,8 +2,11 @@
 import { neon } from '@neondatabase/serverless';
 import * as SecureStore from 'expo-secure-store';
 
-// ⚠️ REPLACE THIS WITH YOUR NEON CONNECTION STRING
-const DATABASE_URL = "postgresql://neondb_owner:npg_f9OxvUoIy4Vm@ep-small-paper-ahkwy2mc-pooler.c-3.us-east-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require";
+const DATABASE_URL = process.env.EXPO_PUBLIC_DATABASE_URL;
+
+if (!DATABASE_URL) {
+  throw new Error('EXPO_PUBLIC_DATABASE_URL is not defined in environment variables');
+}
 
 const sql = neon(DATABASE_URL);
 
@@ -23,7 +26,7 @@ export async function registerUser(fullName: string, businessName: string, usern
       VALUES (${fullName}, ${businessName}, ${username}, ${password})
       RETURNING id, full_name, business_name;
     `;
-    
+
     return { success: true, user: result[0] };
   } catch (error) {
     console.error("Signup Error:", error);
@@ -69,18 +72,18 @@ export async function loginUser(username: string, password: string) {
     const user = users[0];
 
     if (user.password_hash === password) {
-        // --- NEW: Calculate 3 Days from now ---
-        const threeDaysInMs = 3 * 24 * 60 * 60 * 1000;
-        const expiryTime = Date.now() + threeDaysInMs;
+      // --- NEW: Calculate 3 Days from now ---
+      const threeDaysInMs = 3 * 24 * 60 * 60 * 1000;
+      const expiryTime = Date.now() + threeDaysInMs;
 
-        // Save session data AND expiry time
-        await SecureStore.setItemAsync('user_id', user.id.toString());
-        await SecureStore.setItemAsync('business_name', user.business_name);
-        await SecureStore.setItemAsync('session_expiry', expiryTime.toString());
-        
-        return { success: true, user };
+      // Save session data AND expiry time
+      await SecureStore.setItemAsync('user_id', user.id.toString());
+      await SecureStore.setItemAsync('business_name', user.business_name);
+      await SecureStore.setItemAsync('session_expiry', expiryTime.toString());
+
+      return { success: true, user };
     } else {
-        return { success: false, error: "Invalid password" };
+      return { success: false, error: "Invalid password" };
     }
   } catch (error) {
     console.error("Login Error:", error);
@@ -147,27 +150,27 @@ export async function updateSale(saleId: number, itemName: string, category: str
 }
 // 4. Get Today's Stats (For Home Screen)
 export async function getDashboardStats() {
-    try {
-        const userId = await SecureStore.getItemAsync('user_id');
-        if (!userId) return null;
+  try {
+    const userId = await SecureStore.getItemAsync('user_id');
+    if (!userId) return null;
 
-        // Fetch sales for ONLY today
-        const sales = await sql`
+    // Fetch sales for ONLY today
+    const sales = await sql`
             SELECT * FROM sales 
             WHERE user_id = ${parseInt(userId)} 
             AND sale_date >= CURRENT_DATE
             ORDER BY sale_date DESC
         `;
 
-        // Calculate totals manually or via SQL
-        const totalSales = sales.reduce((sum, item) => sum + parseFloat(item.selling_price), 0);
-        const totalProfit = sales.reduce((sum, item) => sum + parseFloat(item.profit), 0);
+    // Calculate totals manually or via SQL
+    const totalSales = sales.reduce((sum, item) => sum + parseFloat(item.selling_price), 0);
+    const totalProfit = sales.reduce((sum, item) => sum + parseFloat(item.profit), 0);
 
-        return { sales, totalSales, totalProfit };
-    } catch (error) {
-        console.error("Stats Error:", error);
-        return null;
-    }
+    return { sales, totalSales, totalProfit };
+  } catch (error) {
+    console.error("Stats Error:", error);
+    return null;
+  }
 }
 export async function getAnalyticsData(timeRange: 'Today' | 'Week' | 'Month') {
   try {
@@ -194,7 +197,7 @@ export async function getAnalyticsData(timeRange: 'Today' | 'Week' | 'Month') {
 
     sales.forEach(sale => {
       const profit = parseFloat(sale.profit);
-      
+
       // A. For Bar/Pie Chart (Category Grouping)
       if (!categoryProfitMap[sale.category]) categoryProfitMap[sale.category] = 0;
       categoryProfitMap[sale.category] += profit;
@@ -208,7 +211,7 @@ export async function getAnalyticsData(timeRange: 'Today' | 'Week' | 'Month') {
       // C. For Area Chart (Time Grouping)
       const dateObj = new Date(sale.sale_date);
       let timeKey = '';
-      
+
       if (timeRange === 'Today') {
         // Group by Hour (e.g., "14:00")
         timeKey = dateObj.getHours() + ':00';
@@ -225,19 +228,19 @@ export async function getAnalyticsData(timeRange: 'Today' | 'Week' | 'Month') {
 
     // 3. Format Bar Data
     const barData = Object.keys(categoryProfitMap).map(cat => ({
-       value: categoryProfitMap[cat],
-       label: cat.split(' ')[0],
+      value: categoryProfitMap[cat],
+      label: cat.split(' ')[0],
     }));
 
     // 4. Format Line/Area Data
     const lineData = Object.keys(timeSeriesMap).map(time => ({
-        value: timeSeriesMap[time],
-        label: time,
-        dataPointText: Math.round(timeSeriesMap[time]).toString(),
+      value: timeSeriesMap[time],
+      label: time,
+      dataPointText: Math.round(timeSeriesMap[time]).toString(),
     }));
 
     // 5. Format Trending
-    const trendingItems = Object.values(itemMap).sort((a:any, b:any) => b.totalProfit - a.totalProfit);
+    const trendingItems = Object.values(itemMap).sort((a: any, b: any) => b.totalProfit - a.totalProfit);
 
     return { barData, lineData, trendingItems };
 
@@ -257,7 +260,7 @@ export async function getUserProfile() {
       FROM users 
       WHERE id = ${parseInt(userId)}
     `;
-    
+
     return result.length > 0 ? result[0] : null;
   } catch (error) {
     console.error("Get Profile Error:", error);
@@ -273,7 +276,7 @@ export async function updateUserProfile(fullName: string, businessName: string, 
 
     // Update logic: If image is provided, update it. If not, keep existing.
     if (base64Image) {
-        await sql`
+      await sql`
             UPDATE users 
             SET full_name = ${fullName}, 
                 business_name = ${businessName},
@@ -281,7 +284,7 @@ export async function updateUserProfile(fullName: string, businessName: string, 
             WHERE id = ${parseInt(userId)}
         `;
     } else {
-        await sql`
+      await sql`
             UPDATE users 
             SET full_name = ${fullName}, 
                 business_name = ${businessName}
@@ -291,7 +294,7 @@ export async function updateUserProfile(fullName: string, businessName: string, 
 
     // Update local storage for immediate app-wide consistency
     await SecureStore.setItemAsync('business_name', businessName);
-    
+
     return { success: true };
   } catch (error) {
     console.error("Update Profile Error:", error);
