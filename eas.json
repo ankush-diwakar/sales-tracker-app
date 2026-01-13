@@ -16,9 +16,9 @@
       "android": {
         "gradleCommand": ":app:assembleRelease",
         "env": {
-          "GRADLE_VERSION": "8.6"
-        },
-        "withoutCredentials": true
+          "GRADLE_VERSION": "8.6",
+          "EAS_BUILD_MAVEN_CACHE_URL": ""
+        }
       }
     }
   },
