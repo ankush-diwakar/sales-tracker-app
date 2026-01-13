@@ -5,11 +5,17 @@ buildscript {
     google()
     mavenCentral()
     gradlePluginPortal()
+    // Add JFrog's public repository
+    maven {
+      url "https://oss.jfrog.org/artifactory/oss-snapshot-local/"
+    }
   }
   dependencies {
     classpath('com.android.tools.build:gradle')
     classpath('com.facebook.react:react-native-gradle-plugin')
     classpath('org.jetbrains.kotlin:kotlin-gradle-plugin')
+    // Explicitly provide the dependency that's timing out
+    classpath('org.jfrog.buildinfo:build-info-extractor-gradle:5.2.5')
   }
 }
 
@@ -18,6 +24,10 @@ allprojects {
     google()
     mavenCentral()
     maven { url 'https://www.jitpack.io' }
+    gradlePluginPortal()
+    maven {
+      url "https://oss.jfrog.org/artifactory/oss-snapshot-local/"
+    }
   }
 }
 
