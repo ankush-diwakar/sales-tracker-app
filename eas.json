@@ -14,10 +14,9 @@
     },
     "production": {
       "android": {
-        "gradleCommand": ":app:assembleRelease",
+        "gradleCommand": ":app:assembleRelease --init-script android/init.gradle",
         "env": {
-          "GRADLE_VERSION": "8.6",
-          "EAS_BUILD_MAVEN_CACHE_URL": ""
+          "GRADLE_VERSION": "8.6"
         }
       }
     }
