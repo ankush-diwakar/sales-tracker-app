@@ -14,10 +14,7 @@
     },
     "production": {
       "android": {
-        "gradleCommand": ":app:assembleRelease",
-        "env": {
-          "GRADLE_VERSION": "8.6"
-        }
+        "gradleCommand": ":app:assembleRelease"
       }
     }
   },
