@@ -4,6 +4,7 @@ buildscript {
   repositories {
     google()
     mavenCentral()
+    // Ensure JCenter is NOT present (it's deprecated and can cause issues)
   }
   dependencies {
     classpath('com.android.tools.build:gradle')
@@ -17,6 +18,23 @@ allprojects {
     google()
     mavenCentral()
     maven { url 'https://www.jitpack.io' }
+    
+    // CRITICAL FIX: Explicitly exclude any EAS internal repositories
+    all { ArtifactRepository repo ->
+      if (repo instanceof MavenArtifactRepository) {
+        def url = repo.url.toString()
+        if (url.contains('eas-build.internal')) {
+          remove(repo)
+        }
+      }
+    }
+  }
+}
+
+// Add this to force resolution from public repos
+configurations.all {
+  resolutionStrategy {
+    force 'org.jfrog.buildinfo:build-info-extractor-gradle:5.2.6'
   }
 }
 

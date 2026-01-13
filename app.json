@@ -33,7 +33,11 @@
       "expo-router"
     ],
     "extra": {
-      "router": {}
-    }
+      "router": {},
+      "eas": {
+        "projectId": "a8b7925b-131e-47aa-86fe-8ca67a0604fb"
+      }
+    },
+    "owner": "ankush0007"
   }
 }
