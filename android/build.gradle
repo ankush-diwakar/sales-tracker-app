@@ -4,11 +4,6 @@ buildscript {
   repositories {
     google()
     mavenCentral()
-    // Add Maven repository that hosts JFrog artifacts
-    maven { 
-      url "https://oss.jfrog.org/artifactory/oss-release-local/"
-      allowInsecureProtocol = false
-    }
   }
   dependencies {
     classpath('com.android.tools.build:gradle')
@@ -22,11 +17,6 @@ allprojects {
     google()
     mavenCentral()
     maven { url 'https://www.jitpack.io' }
-    // Add Maven repository that hosts JFrog artifacts
-    maven { 
-      url "https://oss.jfrog.org/artifactory/oss-release-local/"
-      allowInsecureProtocol = false
-    }
   }
 }
 

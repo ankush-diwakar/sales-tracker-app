@@ -17,7 +17,8 @@
         "gradleCommand": ":app:assembleRelease",
         "env": {
           "GRADLE_VERSION": "8.6"
-        }
+        },
+        "withoutCredentials": true
       }
     }
   },
