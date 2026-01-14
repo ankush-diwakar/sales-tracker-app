@@ -34,6 +34,11 @@ yarn-error.*
 # local env files
 .env*.local
 
+
+# Native folders (managed by expo prebuild)
+/android
+/ios
+
 # typescript
 *.tsbuildinfo
 
